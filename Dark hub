@@ -1,0 +1,157 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+local correctKey = "DARKNESSHUBWOW"
+local keyEntered = false
+
+local mainGUI = script.Parent
+local keyFrame = mainGUI:WaitForChild("KeyFrame")
+local menuFrame = mainGUI:WaitForChild("MenuFrame")
+
+local keyInput = keyFrame:WaitForChild("KeyInput")
+local submitKeyButton = keyFrame:WaitForChild("SubmitKeyButton")
+
+local flyButton = menuFrame:WaitForChild("FlyButton")
+local noclipButton = menuFrame:WaitForChild("NoclipButton")
+local espButton = menuFrame:WaitForChild("ESPButton")
+
+-- Hide the main menu until the correct key is entered
+menuFrame.Visible = false
+
+submitKeyButton.MouseButton1Click:Connect(function()
+    if keyInput.Text == correctKey then
+        keyFrame.Visible = false
+        menuFrame.Visible = true
+    else
+        keyInput.Text = "Wrong Key!"
+        task.wait(1)
+        keyInput.Text = ""
+    end
+end)
+
+-- Fly functionality
+local flying = false
+local flySpeed = 50
+
+local function startFlying()
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity = Vector3.new(0, flySpeed, 0)
+    bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    bodyVelocity.Parent = humanoidRootPart
+    return bodyVelocity
+end
+
+local function stopFlying(bodyVelocity)
+    if bodyVelocity then
+        bodyVelocity:Destroy()
+    end
+end
+
+flyButton.MouseButton1Click:Connect(function()
+    flying = not flying
+    flyButton.Text = flying and "Disable Fly" or "Fly"
+    
+    if flying then
+        local bodyVelocity = startFlying()
+        humanoid.Jump = true -- Small lift
+        script:SetAttribute("BodyVelocity", bodyVelocity)
+    else
+        local bodyVelocity = script:GetAttribute("BodyVelocity")
+        stopFlying(bodyVelocity)
+    end
+end)
+
+-- Noclip functionality
+local noclip = false
+
+local function toggleNoclip()
+    noclip = not noclip
+    noclipButton.Text = noclip and "Disable Noclip" or "Noclip"
+    
+    while noclip do
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide then
+                part.CanCollide = false
+            end
+        end
+        task.wait()
+    end
+
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = true
+        end
+    end
+end
+
+noclipButton.MouseButton1Click:Connect(toggleNoclip)
+
+-- ESP functionality
+local espEnabled = false
+
+local function createESP(targetPlayer)
+    if targetPlayer == player then return end -- Ignore local player
+
+    local character = targetPlayer.Character
+    if character and not character:FindFirstChild("ESPBox") then
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "ESPBox"
+        highlight.Adornee = character
+        highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Red
+        highlight.FillTransparency = 0.5
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- White outline
+        highlight.Parent = character
+    end
+end
+
+local function removeESP(targetPlayer)
+    local character = targetPlayer.Character
+    if character then
+        local highlight = character:FindFirstChild("ESPBox")
+        if highlight then
+            highlight:Destroy()
+        end
+    end
+end
+
+espButton.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    espButton.Text = espEnabled and "Disable ESP" or "ESP"
+
+    for _, target in pairs(game.Players:GetPlayers()) do
+        if espEnabled then
+            createESP(target)
+        else
+            removeESP(target)
+        end
+    end
+end)
+
+game.Players.PlayerAdded:Connect(function(newPlayer)
+    newPlayer.CharacterAdded:Connect(function()
+        if espEnabled then
+            createESP(newPlayer)
+        end
+    end)
+end)
+
+game.Players.PlayerRemoving:Connect(removeESP)
+
+-- Reset settings on respawn
+player.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+    humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    humanoid = character:WaitForChild("Humanoid")
+    
+    -- Reset buttons
+    flying = false
+    flyButton.Text = "Fly"
+    
+    noclip = false
+    noclipButton.Text = "Noclip"
+
+    espEnabled = false
+    espButton.Text = "ESP"
+end)
