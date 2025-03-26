@@ -1,0 +1,157 @@
+-- Darkness Hub UI
+local DarknessHub = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Sidebar = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local CloseButton = Instance.new("TextButton")
+
+-- Sidebar Buttons
+local HomeButton = Instance.new("TextButton")
+local SpeedButton = Instance.new("TextButton")
+local FlyButton = Instance.new("TextButton")
+local NoclipButton = Instance.new("TextButton")
+
+-- Speed UI
+local SpeedFrame = Instance.new("Frame")
+local SpeedText = Instance.new("TextLabel")
+local SpeedBar = Instance.new("TextBox")
+local ChangeSpeedButton = Instance.new("TextButton")
+
+-- Properties
+DarknessHub.Name = "DarknessHub"
+DarknessHub.Parent = game.CoreGui
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = DarknessHub
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Size = UDim2.new(0, 400, 0, 300)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+
+Sidebar.Name = "Sidebar"
+Sidebar.Parent = MainFrame
+Sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Sidebar.Size = UDim2.new(0, 100, 1, 0)
+
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.Text = "Darkness Hub"
+Title.Size = UDim2.new(1, 0, 0.15, 0)
+Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextScaled = true
+
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = MainFrame
+CloseButton.Text = "X"
+CloseButton.Size = UDim2.new(0.1, 0, 0.15, 0)
+CloseButton.Position = UDim2.new(0.9, 0, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+-- Sidebar Buttons
+local function createSidebarButton(name, text, position)
+    local button = Instance.new("TextButton")
+    button.Name = name
+    button.Parent = Sidebar
+    button.Text = text
+    button.Size = UDim2.new(1, 0, 0.15, 0)
+    button.Position = UDim2.new(0, 0, position, 0)
+    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    return button
+end
+
+HomeButton = createSidebarButton("HomeButton", "Home", 0.2)
+SpeedButton = createSidebarButton("SpeedButton", "Speed", 0.4)
+FlyButton = createSidebarButton("FlyButton", "Fly", 0.6)
+NoclipButton = createSidebarButton("NoclipButton", "Noclip", 0.8)
+
+-- Speed UI
+SpeedFrame.Name = "SpeedFrame"
+SpeedFrame.Parent = MainFrame
+SpeedFrame.Size = UDim2.new(0.7, 0, 0.2, 0)
+SpeedFrame.Position = UDim2.new(0.2, 0, 0.4, 0)
+SpeedFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+SpeedFrame.Visible = false
+
+SpeedText.Name = "SpeedText"
+SpeedText.Parent = SpeedFrame
+SpeedText.Text = "Speed:"
+SpeedText.Size = UDim2.new(0.3, 0, 1, 0)
+SpeedText.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+SpeedText.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+SpeedBar.Name = "SpeedBar"
+SpeedBar.Parent = SpeedFrame
+SpeedBar.Size = UDim2.new(0.4, 0, 1, 0)
+SpeedBar.Position = UDim2.new(0.3, 0, 0, 0)
+SpeedBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+SpeedBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedBar.Text = "16"
+
+ChangeSpeedButton.Name = "ChangeSpeedButton"
+ChangeSpeedButton.Parent = SpeedFrame
+ChangeSpeedButton.Text = "Change"
+ChangeSpeedButton.Size = UDim2.new(0.3, 0, 1, 0)
+ChangeSpeedButton.Position = UDim2.new(0.7, 0, 0, 0)
+ChangeSpeedButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+ChangeSpeedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+-- Functions
+local flying = false
+local noclip = false
+
+SpeedButton.MouseButton1Click:Connect(function()
+    SpeedFrame.Visible = not SpeedFrame.Visible
+end)
+
+ChangeSpeedButton.MouseButton1Click:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+    if humanoid then
+        local newSpeed = tonumber(SpeedBar.Text)
+        if newSpeed and newSpeed > 0 then
+            humanoid.WalkSpeed = newSpeed
+        else
+            SpeedBar.Text = "16"
+        end
+    end
+end)
+
+FlyButton.MouseButton1Click:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+    if humanoid then
+        flying = not flying
+        if flying then
+            humanoid.PlatformStand = true
+            character.PrimaryPart.Velocity = Vector3.new(0, 50, 0)
+        else
+            humanoid.PlatformStand = false
+        end
+    end
+end)
+
+NoclipButton.MouseButton1Click:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    noclip = not noclip
+    while noclip do
+        for _, part in pairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+        game:GetService("RunService").Stepped:Wait()
+    end
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    DarknessHub.Enabled = false
+end)
