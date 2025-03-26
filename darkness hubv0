@@ -1,0 +1,146 @@
+-- Darkness Hub UI
+local DarknessHub = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local ToggleButton = Instance.new("TextButton")
+local FlyButton = Instance.new("TextButton")
+local SpeedFrame = Instance.new("Frame")
+local SpeedText = Instance.new("TextLabel")
+local SpeedBar = Instance.new("TextBox")
+local NoclipButton = Instance.new("TextButton")
+
+-- Properties
+DarknessHub.Name = "DarknessHub"
+DarknessHub.Parent = game.CoreGui
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = DarknessHub
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Size = UDim2.new(0, 300, 0, 250)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -125)
+
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.Text = "Darkness Hub"
+Title.Size = UDim2.new(1, 0, 0.2, 0)
+Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextScaled = true
+
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Parent = MainFrame
+ToggleButton.Text = "X"
+ToggleButton.Size = UDim2.new(0.15, 0, 0.2, 0)
+ToggleButton.Position = UDim2.new(0.85, 0, 0, 0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+FlyButton.Name = "FlyButton"
+FlyButton.Parent = MainFrame
+FlyButton.Text = "Fly"
+FlyButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+FlyButton.Position = UDim2.new(0.1, 0, 0.3, 0)
+FlyButton.BackgroundColor3 = Color3.fromRGB(50, 50, 200)
+FlyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+SpeedFrame.Name = "SpeedFrame"
+SpeedFrame.Parent = MainFrame
+SpeedFrame.Size = UDim2.new(0.8, 0, 0.2, 0)
+SpeedFrame.Position = UDim2.new(0.1, 0, 0.55, 0)
+SpeedFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+
+SpeedText.Name = "SpeedText"
+SpeedText.Parent = SpeedFrame
+SpeedText.Text = "Speed:"
+SpeedText.Size = UDim2.new(0.4, 0, 1, 0)
+SpeedText.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+SpeedText.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+SpeedBar.Name = "SpeedBar"
+SpeedBar.Parent = SpeedFrame
+SpeedBar.Size = UDim2.new(0.6, 0, 1, 0)
+SpeedBar.Position = UDim2.new(0.4, 0, 0, 0)
+SpeedBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+SpeedBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedBar.Text = "16"
+
+NoclipButton.Name = "NoclipButton"
+NoclipButton.Parent = MainFrame
+NoclipButton.Text = "Noclip"
+NoclipButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+NoclipButton.Position = UDim2.new(0.1, 0, 0.8, 0)
+NoclipButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+NoclipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+-- Functions
+local flying = false
+local noclip = false
+local isMinimized = false
+
+FlyButton.MouseButton1Click:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+    if humanoid then
+        flying = not flying
+        if flying then
+            humanoid.PlatformStand = true
+            character.PrimaryPart.Velocity = Vector3.new(0, 50, 0)
+        else
+            humanoid.PlatformStand = false
+        end
+    end
+end)
+
+SpeedBar.FocusLost:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+    if humanoid then
+        local newSpeed = tonumber(SpeedBar.Text)
+        if newSpeed and newSpeed > 0 then
+            humanoid.WalkSpeed = newSpeed
+        else
+            SpeedBar.Text = "16"
+        end
+    end
+end)
+
+NoclipButton.MouseButton1Click:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    noclip = not noclip
+    while noclip do
+        for _, part in pairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+        game:GetService("RunService").Stepped:Wait()
+    end
+end)
+
+ToggleButton.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    if isMinimized then
+        -- Shrink the menu
+        for _, obj in pairs(MainFrame:GetChildren()) do
+            if obj ~= Title and obj ~= ToggleButton then
+                obj.Visible = false
+            end
+        end
+        MainFrame.Size = UDim2.new(0, 100, 0, 50)
+        ToggleButton.Text = "+"
+    else
+        -- Expand the menu
+        for _, obj in pairs(MainFrame:GetChildren()) do
+            obj.Visible = true
+        end
+        MainFrame.Size = UDim2.new(0, 300, 0, 250)
+        ToggleButton.Text = "X"
+    end
+end)
